@@ -17,6 +17,10 @@ class RNSRegistry: RCTEventEmitter {
         RNSMainRegistry.main.data.removeValue(forKey: key)
         success(true)
     }
+    @objc func getData(_ key: String, success: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        guard let ret = RNSMainRegistry.main.data[key] else { reject("no_data", "No data at key " + key, nil); return }
+        success(ret)
+    }
     @objc func addEvent(_ type: String, key: String, success: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         let k = RNSMainRegistry.main.addEvent(type: type, key: key) { data in
             self.sendEvent(withName: "RNSRegistry", body: ["type": type, "key": key, "data": data]);
