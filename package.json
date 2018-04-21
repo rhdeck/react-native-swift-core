@@ -1,0 +1,19 @@
+{
+  "name": "react-native-swift-registry",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "react-native-swift": "^1.0.0"
+  },
+  "scripts": {
+    "bridge": "react-native-swift-bridge",
+    "watch": "react-native-swift-bridge --watch",
+    "addpod": "react-native-pod addpod",
+    "removepod": "react-native-pod removepod"
+  },
+  "main": "index.js",
+  "isSwift": true,
+  "devDependencies": {
+    "react-native-pod": "^1.10.1",
+    "react-native-swift-bridge": "^2.1.0"
+  }
+}
