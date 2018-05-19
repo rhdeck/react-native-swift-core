@@ -4,12 +4,14 @@ open class RNSMainRegistry {
     private  var events:[String: [String: cbtype]] = [:]
     public  var data: [String: Any] = [:]
     public static var main:RNSMainRegistry = RNSMainRegistry()
-    public func addEvent(type:String, key:String, callback:cbtype) -> String {
+    public func addEvent(type:String, key:String, callback:@escaping cbtype) -> String {
+        if events[type] == nil { events[type] = [:] }
+        events[type]![key] = callback
         return key
     }
-    public func addEvent(type: String, callback: cbtype) -> String {
+    public func addEvent(type: String, callback: @escaping cbtype) -> String {
         let key = UUID().uuidString
-        return key
+        return addEvent(type:type, key: key, callback: callback)
     }
     public func removeEvent(type: String, key: String) {
         events[type]?.removeValue(forKey: key)
