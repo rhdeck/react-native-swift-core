@@ -5,24 +5,24 @@ class RNSRegistry: RCTEventEmitter {
     override init() {
         super.init()
         RNSRegistry.savedEventKeys.forEach() { k in
-            RNSMainRegistry.main.removeEvent(key: k)
+            RNSMainRegistry.getMain().removeEvent(key: k)
         }
         RNSRegistry.savedEventKeys = []
     }
     @objc func setData(_ key: String, data: Any?, success: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        RNSMainRegistry.main.data[key] = data
+        RNSMainRegistry.getMain().data[key] = data
         success(true)
     }
     @objc func removeData(_ key: String, success: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        RNSMainRegistry.main.data.removeValue(forKey: key)
+        RNSMainRegistry.getMain().data.removeValue(forKey: key)
         success(true)
     }
     @objc func getData(_ key: String, success: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        guard let ret = RNSMainRegistry.main.data[key] else { reject("no_data", "No data at key " + key, nil); return }
+        guard let ret = RNSMainRegistry.getMain().data[key] else { reject("no_data", "No data at key " + key, nil); return }
         success(ret)
     }
     @objc func addEvent(_ type: String, key: String, success: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        let k = RNSMainRegistry.main.addEvent(type: type, key: key) { data in
+        let k = RNSMainRegistry.getMain().addEvent(type: type, key: key) { data in
             self.sendEvent(withName: "RNSRegistry", body: ["type": type, "key": key, "data": data]);
             return true
         }
@@ -30,7 +30,7 @@ class RNSRegistry: RCTEventEmitter {
         success(true)
     }
     @objc func removeEvent(_ key: String, success: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        RNSMainRegistry.main.removeEvent(key: key)
+        RNSMainRegistry.getMain().removeEvent(key: key)
         success(true)
     }
     override func supportedEvents() -> [String]! {
