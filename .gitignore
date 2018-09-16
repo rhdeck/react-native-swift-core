@@ -57,3 +57,5 @@ typings/
 # dotenv environment variables file
 .env
 
+ios/RNSRegistry.xcodeproj/xcuserdata/ray.xcuserdatad/xcschemes/xcschememanagement.plist
+yarn.lock
