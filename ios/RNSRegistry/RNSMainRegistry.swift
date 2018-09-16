@@ -1,8 +1,9 @@
 import Foundation
 public typealias cbtype = (Any) -> Bool
 var events:[String: [String: cbtype]] = [:]
-var data:[String: Any] = [:]
+var data:[String: Any]?
 var q = DispatchQueue(label: "RNSQueue")
+var savedData:[String: Any]?
 open class RNSMainRegistry {
     public class func addEvent(type: String, key: String, callback: @escaping cbtype) -> String {
         q.sync() {
@@ -44,17 +45,55 @@ open class RNSMainRegistry {
     }
     public class func setData(key: String, value: Any) {
         let _ = q.sync() {
-            data[key] = value
+            if(data == nil) { data = loadData()}
+            data![key] = value
         }
     }
     public class func getData(key: String) -> Any? {
         return q.sync() {
-            return data[key]
+            if(data == nil) { data = loadData()}
+            return data![key]
         }
     }
     public class func removeData(key: String) {
         let _ = q.sync() {
-            data.removeValue(forKey: key)
+            if(data == nil) { data = loadData()}
+            data!.removeValue(forKey: key)
         }
     }
+    public class func saveData(key: String, value: Any) {
+        var d = loadData()
+        d[key] = value
+        savedData = d
+        let _ = saveDataFile()
+    }
+    public class func removeSavedData(key: String) {
+        var d = loadData()
+        d.removeValue(forKey: key)
+        savedData = d
+        let _ = saveDataFile()
+    }
+    public class func flushData() {
+        savedData = [:]
+        saveDataFile()
+    }
+}
+func getFileURL() -> URL {
+    return try! FileManager.default.url(for: FileManager.SearchPathDirectory.documentDirectory, in: FileManager.SearchPathDomainMask.localDomainMask, appropriateFor: nil, create: true).appendingPathComponent("rnsmr.json")
+}
+func saveDataFile() -> Bool {
+    guard let data = try? JSONSerialization.data(withJSONObject: loadData()) else { return false }
+    guard let _ = try? data.write(to: getFileURL()) else { return false }
+    return true
+}
+func loadData() -> [String:Any] {
+    if let d = savedData { return d }
+    let fileURL = getFileURL()
+    guard
+        FileManager.default.fileExists(atPath: fileURL.path),
+        let data:Data = try? Data(contentsOf: fileURL),
+        let d:[String:Any] = try? JSONSerialization.jsonObject(with: data) as! [String : Any]
+    else { savedData = [:] ; return savedData! }
+    savedData = d
+    return d
 }
