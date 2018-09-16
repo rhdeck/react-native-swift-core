@@ -19,6 +19,13 @@ class RNSRegistry: RCTEventEmitter {
         }
         success(true)
     }
+    @objc func saveData(_ key: String, data: Any?, success: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        if let d = data {
+            RNSMainRegistry.saveData(key: key, value: d)
+        } else {
+            RNSMainRegistry.removeSavedData(key: key)
+        }
+    }
     @objc func removeData(_ key: String, success: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         RNSMainRegistry.removeData(key: key)
         success(true)
