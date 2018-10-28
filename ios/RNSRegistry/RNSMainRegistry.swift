@@ -75,20 +75,24 @@ open class RNSMainRegistry {
     }
     public class func flushData() {
         savedData = [:]
-        saveDataFile()
+        let _ = saveDataFile()
     }
 }
-func getFileURL() -> URL {
-    return try! FileManager.default.url(for: FileManager.SearchPathDirectory.documentDirectory, in: FileManager.SearchPathDomainMask.localDomainMask, appropriateFor: nil, create: true).appendingPathComponent("rnsmr.json")
+func getFileURL() -> URL? {
+    guard let base =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
+    return base.appendingPathComponent("rnsmr.json")
 }
 func saveDataFile() -> Bool {
-    guard let data = try? JSONSerialization.data(withJSONObject: loadData()) else { return false }
-    guard let _ = try? data.write(to: getFileURL()) else { return false }
+    guard
+        let data = try? JSONSerialization.data(withJSONObject: loadData()),
+        let fileURL = getFileURL()
+    else { return false }
+    guard let _ = try? data.write(to: fileURL) else { return false }
     return true
 }
 func loadData() -> [String:Any] {
     if let d = savedData { return d }
-    let fileURL = getFileURL()
+    guard let fileURL = getFileURL() else { return [:] }
     guard
         FileManager.default.fileExists(atPath: fileURL.path),
         let data:Data = try? Data(contentsOf: fileURL),
