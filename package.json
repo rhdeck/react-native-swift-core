@@ -4,6 +4,9 @@
   "peerDependencies": {
     "react-native-swift": "^1.0.0"
   },
+  "license": "MIT",
+  "homepage": "https://github.com/rhdeck/react-native-swift-registry#README",
+  "description": "Adds a registry of data usable from native components",
   "scripts": {
     "bridge": "react-native-swift-bridge",
     "watch": "react-native-swift-bridge --watch",
