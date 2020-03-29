@@ -6,43 +6,31 @@ const { spawnSync } = require("child_process");
 module.exports = {
   commands: [
     {
+      name: "linkpods",
+      description: "Link pods for ios",
+      func: () => {
+        process.chdir(path.join(process.cwd(), "ios"));
+        spawnSync("pod", ["install"], { stdio: "inherit" });
+      }
+    },
+    {
       name: "swift-link",
       description: "Initialize react-native-swift related packages",
       func: () => {
         spawnSync("node", [path.join(__dirname, "bin", "set-swift-base.js")], {
           stdio: "inherit"
         });
+        spawnSync(
+          "node",
+          [path.join(__dirname, "bin", "set-startupclasses.js")],
+          {
+            stdio: "inherit"
+          }
+        );
         //Go looking for other dependencies and devDependencies on the project
         spawnSync("node", [path.join(__dirname, "bin", "swift-link.js")], {
           stdio: "inherit"
         });
-      }
-    },
-    {
-      name: "set-appdelegate",
-      description: "Activate the stock appdelegate.swift",
-      func: () => {
-        spawnSync(
-          "node",
-          [path.join(__dirname, "bin", "set-swift-base.js")],
-
-          {
-            stdio: "inherit"
-          }
-        );
-      }
-    },
-    {
-      name: "set-classes",
-      description: "Update plist with startup classes",
-      func: () => {
-        spawnSync(
-          "node",
-          [path.join(__dirname, "bin", "setstartupclasses.js")],
-          {
-            stdio: "inherit"
-          }
-        );
       }
     },
     {
