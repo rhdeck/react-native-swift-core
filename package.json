@@ -1,5 +1,5 @@
 {
-  "name": "react-native-swift-registry",
+  "name": "@react-native-swift/core",
   "version": "2.0.0",
   "license": "MIT",
   "homepage": "https://github.com/rhdeck/react-native-swift-registry#README",
