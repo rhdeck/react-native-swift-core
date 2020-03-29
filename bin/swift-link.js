@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-var pbxproj = require("@raydeck/xcode");
 var { readFileSync } = require("fs");
 var { join, dirname } = require("path");
 var glob = require("glob");
