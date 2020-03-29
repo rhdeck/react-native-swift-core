@@ -10,12 +10,10 @@ const { dependencies, devDependencies } = require(join(
   "package.json"
 ));
 //scan for swift icons
-const baseDir = process.cwd();
 const allDependencies = Object.keys({ ...dependencies, ...devDependencies });
 const startupClasses = allDependencies
   .flatMap(dependency => {
     const packagePath = module.require(dependency);
-    const packageDir = dirname(packagePath);
     const { ["react-native-swift"]: { startupClasses } = {} } = JSON.parse(
       readFileSync(packagePath, { encoding: "utf8" })
     );

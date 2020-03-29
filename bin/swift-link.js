@@ -1,17 +1,14 @@
 #!/usr/bin/env node
 var { readFileSync } = require("fs");
 var { join, dirname } = require("path");
-var glob = require("glob");
 //Get my directory
 const { dependencies, devDependencies } = require(join(
   process.cwd(),
   "package.json"
 ));
 //scan for swift icons
-const baseDir = process.cwd();
-const allDependencies = Object.keys({ ...dependencies, ...devDependencies })(
-  allDependencies
-).forEach(dependency => {
+const allDependencies = Object.keys({ ...dependencies, ...devDependencies });
+allDependencies.forEach(dependency => {
   const packagePath = module.require(dependency);
   const packageDir = dirname(packagePath);
   const { swiftcommands } = JSON.parse(

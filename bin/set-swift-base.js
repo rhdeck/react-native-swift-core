@@ -65,12 +65,12 @@ proj.parse(function(err) {
   const fp = proj.getFirstProject();
   Object.keys(adds).forEach(fileName => {
     const path = adds[fileName];
-    let file = proj.addFile(path, null, fp);
+    let file = proj.addResourceFile(path, null, fp);
     if (!file) {
       console.log("Looks like the file is already here - aborting", fileName);
       return;
     }
-    file.uuid = this.generateUuid();
+    file.uuid = project.generateUuid();
     const nts = proj.pbxNativeTargetSection();
     for (var key in nts) {
       if (key.endsWith("_comment")) continue;
