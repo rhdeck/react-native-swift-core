@@ -7,10 +7,11 @@ var glob = require("glob");
 const binFile = process.argv[1];
 const binPath = path.dirname(binFile); //bin directory
 const modulePath = path.dirname(binPath); //dependency directory
-var node_modulesPath = path.dirname(modulePath); // node_modules
+const scopePath = path.dirname(modulePath);
+var node_modulesPath = path.dirname(scopePath); // node_modules
 var baseName = path.basename(node_modulesPath);
 if (!baseName.startsWith("node_modules")) {
-  console.log("This is not a dependency: ", thisPath);
+  console.log("This is not a dependency: ", baseName);
   process.exit();
 }
 var projectPath = path.dirname(node_modulesPath); // parent
