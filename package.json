@@ -1,9 +1,6 @@
 {
   "name": "react-native-swift-registry",
   "version": "1.0.0",
-  "peerDependencies": {
-    "react-native-swift": "^1.0.0"
-  },
   "license": "MIT",
   "homepage": "https://github.com/rhdeck/react-native-swift-registry#README",
   "description": "Adds a registry of data usable from native components",
@@ -17,11 +14,6 @@
   "isSwift": true,
   "devDependencies": {
     "react-native-swift-bridge": "^2.1.0"
-  },
-  "rnpm": {
-    "commands": {
-      "prelink": "node node_modules/.bin/react-native-swift-registry"
-    }
   },
   "bin": {
     "react-native-swift-registry": "prelink.js"
