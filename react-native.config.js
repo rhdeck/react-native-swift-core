@@ -13,8 +13,8 @@ module.exports = {
       func: () => {
         spawnSync(
           "node",
-          path.join(__dirname, "bin", "set-swift-base.js"),
-          [],
+          [path.join(__dirname, "bin", "set-swift-base.js")],
+
           {
             stdio: "inherit"
           }
@@ -27,8 +27,7 @@ module.exports = {
       func: () => {
         spawnSync(
           "node",
-          path.join(__dirname, "bin", "setstartupclasses.js"),
-          [],
+          [path.join(__dirname, "bin", "setstartupclasses.js")],
           {
             stdio: "inherit"
           }
