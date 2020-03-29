@@ -1,43 +1,37 @@
 #!/usr/bin/env node
-const Path = require("path");
-const fs = require("fs");
+var { readFileSync } = require("fs");
+var { join, dirname } = require("path");
+var glob = require("glob");
 const plist = require("plist");
-const glob = require("glob");
-const package = require(Path.join(process.cwd(), "package.json"));
-const { dependencies } = package;
-let newStartupClasses = [];
-const findNodeModule = (node_module, cwd) => {
-  if (!cwd) return;
-  const p = Path.join(cwd, "node_modules", node_module, "package.json");
-  if (fs.existsSync(p)) return p;
-  else return findNodeModule(Path.dirname(p));
-};
-if (dependencies && typeof dependencies === "object") {
-  Object.keys(dependencies).forEach(node_module => {
-    try {
-      const path = findNodeModule(node_module, process.cwd());
-      const { startupClasses } = require(path);
-      if (startupClasses) {
-        newStartupClasses = newStartupClasses.concat(startupClasses);
-      }
-    } catch (e) {
-      console.log("Error", e);
-    }
-  });
 
-  //OK let's load up our plist now
-  const pglobs = glob.sync(Path.join("ios", "*", "info.plist"));
-  if (!pglobs) {
-    console.log("Could not find the plist file");
-    return;
-  }
-  pglobs.forEach(pglob => {
-    const txt = fs.readFileSync(pglob, { encoding: "UTF8" });
-    const o = plist.parse(txt);
-    o.RNSRClasses = newStartupClasses.filter(v => v);
-    fs.writeFileSync(pglob, plist.build(o));
-  });
-  console.log("Updated RNSR classes to", newStartupClasses.join(", "));
-} else {
-  console.log("No dependencies to work with");
+//Get my directory
+const { dependencies, devDependencies } = require(join(
+  process.cwd(),
+  "package.json"
+));
+//scan for swift icons
+const baseDir = process.cwd();
+const allDependencies = Object.keys({ ...dependencies, ...devDependencies });
+const startupClasses = allDependencies
+  .flatMap(dependency => {
+    const packagePath = module.require(dependency);
+    const packageDir = dirname(packagePath);
+    const { ["react-native-swift"]: { startupClasses } = {} } = JSON.parse(
+      readFileSync(packagePath, { encoding: "utf8" })
+    );
+    return startupClasses;
+  })
+  .filter(Boolean);
+
+const pglobs = glob.sync(Path.join("ios", "*", "info.plist"));
+if (!pglobs) {
+  console.log("Could not find the plist file");
+  return;
 }
+pglobs.forEach(pglob => {
+  const txt = fs.readFileSync(pglob, { encoding: "UTF8" });
+  const o = plist.parse(txt);
+  o.RNSRClasses = startupClasses;
+  fs.writeFileSync(pglob, plist.build(o));
+});
+console.log("Updated RNSR classes to", newStartupClasses.join(", "));
