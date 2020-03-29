@@ -3,10 +3,22 @@ const fs = require("fs");
 const path = require("path");
 const inquirer = require("inquirer");
 const hexrgb = require("hex-rgb");
-const rgbhex = require("rgb-hex");
 const { spawnSync } = require("child_process");
 module.exports = {
   commands: [
+    {
+      name: "swift-link",
+      description: "Initialize react-native-swift related packages",
+      func: () => {
+        spawnSync("node", [path.join(__dirname, "bin", "set-swift-base.js")], {
+          stdio: "inherit"
+        });
+        //Go looking for other dependencies and devDependencies on the project
+        spawnSync("node", [path.join(__dirname, "bin", "swift-link.js")], {
+          stdio: "inherit"
+        });
+      }
+    },
     {
       name: "set-appdelegate",
       description: "Activate the stock appdelegate.swift",
