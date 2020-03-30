@@ -22,7 +22,7 @@ module.exports = {
         });
         spawnSync(
           "node",
-          [path.join(__dirname, "bin", "set-startupclasses.js")],
+          [path.join(__dirname, "bin", "setstartupclasses.js")],
           {
             stdio: "inherit"
           }
