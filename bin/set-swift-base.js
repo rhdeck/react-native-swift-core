@@ -70,7 +70,7 @@ proj.parse(function(err) {
       console.log("Looks like the file is already here - aborting", fileName);
       return;
     }
-    file.uuid = project.generateUuid();
+    file.uuid = proj.generateUuid();
     const nts = proj.pbxNativeTargetSection();
     for (var key in nts) {
       if (key.endsWith("_comment")) continue;
@@ -87,6 +87,6 @@ proj.parse(function(err) {
     proj.addBuildProperty(key, properties[key]);
   });
   const out = proj.writeSync();
-  fs.writeFileSync(filename, out);
+  if (out) fs.writeFileSync(filename, out);
 });
 require("../lib/setplistcolor")();

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-var { readFileSync } = require("fs");
-var { join, dirname } = require("path");
+var { readFileSync, writeFileSync, existsSync } = require("fs");
+var { join } = require("path");
 var glob = require("glob");
 const plist = require("plist");
 
@@ -13,23 +13,29 @@ const { dependencies, devDependencies } = require(join(
 const allDependencies = Object.keys({ ...dependencies, ...devDependencies });
 const startupClasses = allDependencies
   .flatMap(dependency => {
-    const packagePath = module.require(dependency);
-    const { ["react-native-swift"]: { startupClasses } = {} } = JSON.parse(
-      readFileSync(packagePath, { encoding: "utf8" })
-    );
+    console.log("looking for rnscj in", dependency);
+    const base = require.resolve.paths(dependency).find(path => {
+      const joined = join(path, dependency, "react-native-swift.config.js");
+      return existsSync(joined);
+    });
+    if (!base) return;
+    const rnsc = join(base, dependency, "react-native-swift.config.js");
+    console.log("Found a winner in", rnsc);
+    const { startupClasses } = require(rnsc);
+    console.log("startup classes are", startupClasses);
     return startupClasses;
   })
   .filter(Boolean);
 
-const pglobs = glob.sync(Path.join("ios", "*", "info.plist"));
+const pglobs = glob.sync(join("ios", "*", "info.plist"));
 if (!pglobs) {
   console.log("Could not find the plist file");
   return;
 }
 pglobs.forEach(pglob => {
-  const txt = fs.readFileSync(pglob, { encoding: "UTF8" });
+  const txt = readFileSync(pglob, { encoding: "UTF8" });
   const o = plist.parse(txt);
   o.RNSRClasses = startupClasses;
-  fs.writeFileSync(pglob, plist.build(o));
+  writeFileSync(pglob, plist.build(o));
 });
-console.log("Updated RNSR classes to", newStartupClasses.join(", "));
+console.log("Updated RNSR classes to", startupClasses.join(", "));

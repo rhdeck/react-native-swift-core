@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-var { readFileSync } = require("fs");
-var { join, dirname } = require("path");
+var { existsSync } = require("fs");
+var { join } = require("path");
 //Get my directory
 const { dependencies, devDependencies } = require(join(
   process.cwd(),
@@ -9,24 +9,28 @@ const { dependencies, devDependencies } = require(join(
 //scan for swift icons
 const allDependencies = Object.keys({ ...dependencies, ...devDependencies });
 allDependencies.forEach(dependency => {
-  const packagePath = module.require(dependency);
-  const packageDir = dirname(packagePath);
-  const { swiftcommands } = JSON.parse(
-    readFileSync(packagePath, { encoding: "utf8" })
-  );
-  const rnslPath = join(packageDir, "react-native-swift.config.js");
-  const { prelink } = require(rnslPath);
-  if (Array.isArray(prelink)) prelink.forEach(p => p());
-  else prelink();
+  const base = require.resolve.paths(dependency).find(path => {
+    const joined = join(path, dependency, "react-native-swift.config.js");
+    return existsSync(joined);
+  });
+  if (!base) return;
+  const rnsc = join(base, dependency, "react-native-swift.config.js");
+  if (!rnsc) return;
+  const { prelink } = require(rnsc);
+  if (prelink)
+    if (Array.isArray(prelink)) prelink.forEach(p => p());
+    else prelink();
 });
 allDependencies.forEach(dependency => {
-  const packagePath = module.require(dependency);
-  const packageDir = dirname(packagePath);
-  const { swiftcommands } = JSON.parse(
-    readFileSync(packagePath, { encoding: "utf8" })
-  );
-  const rnslPath = join(packageDir, "react-native-swift.config.js");
-  const { postlink } = require(rnslPath);
-  if (Array.isArray(postlink)) postlink.forEach(p => p());
-  else prelink();
+  const base = require.resolve.paths(dependency).find(path => {
+    const joined = join(path, dependency, "react-native-swift.config.js");
+    return existsSync(joined);
+  });
+  if (!base) return;
+  const rnsc = join(base, dependency, "react-native-swift.config.js");
+  if (!rnsc) return;
+  const { postlink } = require(rnsc);
+  if (postlink)
+    if (Array.isArray(postlink)) postlink.forEach(p => p());
+    else postlink();
 });
