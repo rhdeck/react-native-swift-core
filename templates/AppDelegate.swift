@@ -10,11 +10,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let namespace = (Bundle.main.infoDictionary!["CFBundleExecutable"] as! String).replacingOccurrences(of: "-", with: "_").replacingOccurrences(of: " ", with: "_")
     guard let classes = Bundle.main.infoDictionary!["RNSRClasses"] as? [String] else { return }
     classes.forEach() { c in
-      if let cl  = NSClassFromString(c) {
+      if let cl  = NSClassFromString(c)  {
         cl.runOnStart?()
       } else {
         let fqn =  namespace + "." + c
-        if let cl = NSClassFromString(fqn) {
+        if let cl = NSClassFromString(fqn)  {
           cl.runOnStart?()
         }
       }

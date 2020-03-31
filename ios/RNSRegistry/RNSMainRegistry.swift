@@ -4,6 +4,9 @@ var events:[String: [String: cbtype]] = [:]
 var data:[String: Any]?
 var q = DispatchQueue(label: "RNSQueue")
 var savedData:[String: Any]?
+public protocol RNSStartable {
+    static func runOnStart()->Void
+}
 open class RNSMainRegistry {
     public class func addEvent(type: String, key: String, callback: @escaping cbtype) -> String {
         q.sync() {
