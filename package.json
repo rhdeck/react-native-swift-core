@@ -1,6 +1,6 @@
 {
   "name": "@react-native-swift/core",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "license": "MIT",
   "homepage": "https://github.com/rhdeck/react-native-swift-core#README",
   "description": "Adds a registry of data usable from native components",
