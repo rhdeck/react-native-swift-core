@@ -6,37 +6,39 @@ const { spawnSync } = require("child_process");
 module.exports = {
   commands: [
     {
-      name: "linkpods",
-      description: "Link pods for ios",
+      name: "set-swift-base",
+      description:
+        "Set swift base conditions (replacing Appdelegate.swift, updating settings)",
       func: () => {
-        process.chdir(path.join(process.cwd(), "ios"));
-        spawnSync("pod", ["install"], { stdio: "inherit" });
-      }
+        spawnSync("node", [path.join(__dirname, "bin", "set-swift-base.js")], {
+          stdio: "inherit",
+        });
+      },
     },
     {
       name: "swift-link",
       description: "Initialize react-native-swift related packages",
       func: () => {
         spawnSync("node", [path.join(__dirname, "bin", "set-swift-base.js")], {
-          stdio: "inherit"
+          stdio: "inherit",
         });
         spawnSync(
           "node",
           [path.join(__dirname, "bin", "setstartupclasses.js")],
           {
-            stdio: "inherit"
+            stdio: "inherit",
           }
         );
         //Go looking for other dependencies and devDependencies on the project
         spawnSync("node", [path.join(__dirname, "bin", "swift-link.js")], {
-          stdio: "inherit"
+          stdio: "inherit",
         });
-      }
+      },
     },
     {
       name: "bgcolor [newcolor]",
       description: "Set background color for application",
-      func: newcolor => {
+      func: (newcolor) => {
         if (newcolor && typeof newcolor !== "string") {
           newcolor = newcolor[0];
         }
@@ -60,21 +62,21 @@ module.exports = {
             message:
               "What color do you want for your default background? (as Hex value)",
             default: defColor,
-            validate: answer => {
+            validate: (answer) => {
               try {
                 return hexrgb(answer) ? true : false;
               } catch (e) {
                 return false;
               }
-            }
+            },
           })
-          .then(answers => {
+          .then((answers) => {
             p.backgroundColor = answers.bgcolor;
             fs.writeFileSync(pp, JSON.stringify(p, null, 2));
             require("./lib/setPListColor")();
             console.log("Updated background color", answers.bgcolor);
           });
-      }
-    }
-  ]
+      },
+    },
+  ],
 };

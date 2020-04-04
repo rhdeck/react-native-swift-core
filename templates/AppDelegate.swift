@@ -1,8 +1,18 @@
 import UIKit
 import ReactNativeSwiftRegistry
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
   var ranAtStart = false
+  #if DEBUG
+   func InitializeFlipper(application: UIApplication) {
+    guard let client = FlipperClient.shared() else { return }
+    let layoutDescriptorMapper = SKDescriptorMapper()
+    client.add(FlipperKitLayoutPlugin(rootNode: application, with: layoutDescriptorMapper))
+    client.add(FKUserDefaultsPlugin(suiteName: nil))
+    client.add(FlipperKitReactPlugin())
+    client.add(FlipperKitNetworkPlugin(networkAdapter: SKIOSNetworkAdapter()))
+  }
+  #endif
   public func runAtStart() {
     //No guaranteed thread
     guard !ranAtStart else { return }
@@ -22,33 +32,37 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   }
   var window: UIWindow?
   var cachedLaunchOptions: [UIApplicationLaunchOptionsKey: Any]? = nil
-  public func getRootView(_ jsLocation: URL) -> UIView? {
-    guard let rv:RCTRootView = RCTRootView(bundleURL: jsLocation, moduleName: Bundle.main.infoDictionary![kCFBundleNameKey as String] as! String, initialProperties: nil, launchOptions: cachedLaunchOptions) else {
-      return nil
-    }
-    return rv
-  }
   //MARK: Lifecycle Management
   public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
     runAtStart()
     cachedLaunchOptions = launchOptions
-    guard let jsLocation = RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index", fallbackResource: nil) else {
-      return false;
-    }
-    RNSMainRegistry.setData(key: "initialBundle", value: jsLocation.absoluteString)
-    RNSMainRegistry.triggerEvent(type: "app.didFinishLaunchingWithOptions.start", data: [:])
+
+    #if DEBUG
+    InitializeFlipper(application: application);
+    #endif
+    let _ = RNSMainRegistry.triggerEvent(type: "app.didFinishLaunchingWithOptions.start", data: [:])
     let w = UIWindow(frame: UIScreen.main.bounds)
     let rvc = UIViewController()
-    rvc.view = getRootView(jsLocation)
+    let bridge = RCTBridge(delegate: self, launchOptions: launchOptions)
+    rvc.view = RCTRootView(bridge: bridge!, moduleName: Bundle.main.infoDictionary![kCFBundleNameKey as String] as! String, initialProperties: nil)
+    if #available(iOS 13.0, *) {
+      rvc.view.backgroundColor = .systemBackground
+    } else {
+      rvc.view.backgroundColor = .white
+    }
     w.rootViewController = rvc
     w.makeKeyAndVisible()
     self.window = w
     let _ = RNSMainRegistry.addEvent(type: "app.reset", key: "core") { data in
         DispatchQueue.main.async {
           let rvc = UIViewController()
-          guard let sURL = RNSMainRegistry.getData(key: "initialBundle") as? String, let jsLocation = URL(string: sURL)
-          else { return }
-          rvc.view = self.getRootView(jsLocation)
+          guard let bridge = RCTBridge(delegate: self, launchOptions: launchOptions) else { return }
+          rvc.view = RCTRootView(bridge: bridge, moduleName: Bundle.main.infoDictionary![kCFBundleNameKey as String] as! String, initialProperties: nil)
+         if #available(iOS 13.0, *) {
+            rvc.view.backgroundColor = .systemBackground
+          } else {
+            rvc.view.backgroundColor = .white
+          }
           self.window?.rootViewController = rvc
         }
         return true
@@ -115,6 +129,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   public func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
     runAtStart()
     let _ = RNSMainRegistry.triggerEvent(type: "app.handleEventsForBackgroundURLSession", data: ["identifier": identifier, "completionHandler": completionHandler])
+  }
+  func sourceURL(for bridge: RCTBridge!)->URL! {
+    let tempLocation:URL?
+    if(_isDebugAssertConfiguration()) {
+      tempLocation = RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index", fallbackResource: nil)
+    } else {
+      tempLocation = Bundle.main.url(forResource:"main", withExtension:"jsbundle")
+    }
+    RNSMainRegistry.setData(key: "sourceURL", value: tempLocation?.absoluteString ?? "")
+    let _ = RNSMainRegistry.triggerEvent(type: "app.getSourceURL",data: ["bridge":bridge])
+    let urlString = RNSMainRegistry.getData(key: "sourceURL") as? String
+    return URL(string: urlString ?? "")
   }
 }
 //Helper to give the runOnStart hint for AnyClass

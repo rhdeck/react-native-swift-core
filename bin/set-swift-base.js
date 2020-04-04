@@ -3,6 +3,7 @@ var pbxproj = require("@raydeck/xcode");
 var fs = require("fs");
 var path = require("path");
 var glob = require("glob");
+const addSwiftDebugFlag = require("../lib/addSwiftDebugFlag");
 //Get my directory
 const binFile = process.argv[1];
 const binPath = path.dirname(binFile); //bin directory
@@ -31,7 +32,7 @@ const bridgingHeaderName = "swift-Bridging-Header.h";
 let filename = path.join(xpdir, "project.pbxproj");
 let properties = {
   SWIFT_VERSION: "4.0",
-  SWIFT_OBJC_BRIDGING_HEADER: bridgingHeaderName
+  SWIFT_OBJC_BRIDGING_HEADER: bridgingHeaderName,
 };
 if (!fs.existsSync(filename)) {
   console.log("Could not find pbxproj file:", filename);
@@ -42,28 +43,26 @@ const appDelegateTargetPath = path.join(iosPath, appDelegateName);
 const bridgingHeaderTargetPath = path.join(iosPath, bridgingHeaderName);
 
 //Reason check - are they already here?
-if (fs.existsSync(appDelegateTargetPath)) {
+if (!fs.existsSync(appDelegateTargetPath)) {
   console.log(appDelegateName + " is already in " + iosPath + ": aborting");
-  process.exit();
-}
 
-const templatesPath = path.join(modulePath, "templates");
+  const templatesPath = path.join(modulePath, "templates");
 
-const appDelegateSourcePath = path.join(templatesPath, appDelegateName);
-const bridgingHeaderSourcePath = path.join(templatesPath, bridgingHeaderName);
+  const appDelegateSourcePath = path.join(templatesPath, appDelegateName);
+  const bridgingHeaderSourcePath = path.join(templatesPath, bridgingHeaderName);
 
-fs.copyFileSync(appDelegateSourcePath, appDelegateTargetPath);
-fs.copyFileSync(bridgingHeaderSourcePath, bridgingHeaderTargetPath);
+  fs.copyFileSync(appDelegateSourcePath, appDelegateTargetPath);
+  fs.copyFileSync(bridgingHeaderSourcePath, bridgingHeaderTargetPath);
 
-const removes = ["AppDelegate.h", "AppDelegate.m", "main.m"];
-const adds = {};
-adds[appDelegateName] = appDelegateTargetPath;
-adds[bridgingHeaderName] = bridgingHeaderTargetPath;
+  const removes = ["AppDelegate.h", "AppDelegate.m", "main.m"];
+  const adds = {};
+  adds[appDelegateName] = appDelegateTargetPath;
+  adds[bridgingHeaderName] = bridgingHeaderTargetPath;
 
-var proj = pbxproj.project(filename);
-proj.parse(function(err) {
+  var proj = pbxproj.project(filename);
+  proj.parseSync();
   const fp = proj.getFirstProject();
-  Object.keys(adds).forEach(fileName => {
+  Object.keys(adds).forEach((fileName) => {
     const path = adds[fileName];
     let file = proj.addResourceFile(path, null, fp);
     if (!file) {
@@ -80,13 +79,14 @@ proj.parse(function(err) {
       proj.addToPbxSourcesBuildPhase(file);
     }
   });
-  removes.forEach(key => {
+  removes.forEach((key) => {
     proj.removeSourceFile(key, null, fp);
   });
-  Object.keys(properties).forEach(key => {
+  Object.keys(properties).forEach((key) => {
     proj.addBuildProperty(key, properties[key]);
   });
   const out = proj.writeSync();
   if (out) fs.writeFileSync(filename, out);
-});
+}
+addSwiftDebugFlag(process.cwd());
 require("../lib/setplistcolor")();
